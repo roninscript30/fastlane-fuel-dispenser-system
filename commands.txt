@@ -1,0 +1,456 @@
+# Fast Lane Fuel System - Command Reference
+
+## 🚀 Quick Start Commands
+
+### Initial Setup
+```bash
+# Complete system setup
+./scripts/setup-backend.sh --seed
+
+# Check system status
+./scripts/system-check.sh
+
+# Deploy everything
+./scripts/deploy.sh
+```
+
+## 🖥️ Backend Commands
+
+### Setup & Installation
+```bash
+# Setup backend and MongoDB
+./scripts/setup-backend.sh
+
+# Setup with database seeding
+./scripts/setup-backend.sh --seed
+
+# Install dependencies manually
+cd backend
+npm install
+```
+
+### Running the Server
+```bash
+# Start production server
+./scripts/start-server.sh
+
+# Start development server (auto-reload)
+cd backend
+npm run dev
+
+# Start with node directly
+cd backend
+node src/server.js
+```
+
+### Database Operations
+```bash
+# Seed database with sample data
+cd backend
+npm run seed
+
+# Connect to MongoDB shell
+mongosh fuel-dispenser
+
+# Start MongoDB (if not running)
+mongod
+
+# Or with Docker
+docker run -d -p 27017:27017 --name fuel-mongodb mongo:latest
+```
+
+### Testing
+```bash
+# Run API tests
+./test/backend-tests/test-api.sh
+
+# Test health endpoint
+curl http://localhost:3000/health
+
+# Test user endpoint
+curl http://localhost:3000/api/users
+```
+
+## 🔌 ESP32 Commands
+
+### Building Firmware
+```bash
+# Build firmware
+cd esp32
+pio run
+
+# Clean build
+cd esp32
+pio run --target clean
+```
+
+### Uploading Firmware
+```bash
+# Upload with script (recommended)
+./scripts/upload-esp32.sh
+
+# Upload manually
+cd esp32
+pio run --target upload
+
+# Force upload with bootloader mode
+cd esp32
+pio run --target upload --upload-port /dev/ttyUSB0
+```
+
+### Monitoring
+```bash
+# Monitor serial output (script)
+./scripts/monitor-esp32.sh
+
+# Monitor manually
+cd esp32
+pio device monitor --baud 115200
+
+# Monitor specific port
+cd esp32
+pio device monitor --port /dev/ttyUSB0 --baud 115200
+```
+
+### USB Permissions
+```bash
+# Fix USB permissions
+sudo chmod 666 /dev/ttyUSB0
+
+# Add user to dialout group (permanent)
+sudo usermod -a -G dialout $USER
+# Then logout and login again
+```
+
+## 🌐 Frontend Commands
+
+### Build & Serve
+```bash
+# Prepare frontend
+./scripts/build-frontend.sh
+
+# Frontend is served by backend
+# No separate build process needed for static HTML/CSS/JS
+```
+
+### Access URLs
+```bash
+# Landing page
+http://localhost:3000/
+
+# User dashboard
+http://localhost:3000/user
+
+# Admin panel
+http://localhost:3000/admin
+
+# ESP32 API
+http://<esp32-ip>/status
+```
+
+## ⚙️ Configuration Commands
+
+### Viewing Configuration
+```bash
+# View all config files
+cat config/*.json
+
+# View WiFi config
+cat config/wifi.json
+
+# View server config
+cat config/server.json
+
+# View database config
+cat config/database.json
+
+# View constants
+cat config/constants.json
+```
+
+### Editing Configuration
+```bash
+# Edit WiFi credentials
+nano config/wifi.json
+
+# Edit server URLs
+nano config/server.json
+
+# Edit fuel rates and RFID tags
+nano config/constants.json
+
+# Edit ESP32 hardware config
+nano esp32/include/config.h
+```
+
+### Backend Environment Variables
+```bash
+# Create .env file from example
+cd backend
+cp .env.example .env
+nano .env
+
+# View current environment
+cd backend
+cat .env
+```
+
+## 🐳 Docker Commands
+
+### Backend
+```bash
+# Build backend image
+cd backend
+docker build -t fuel-backend .
+
+# Run backend container
+docker run -d -p 3000:3000 \
+  --env-file .env \
+  --name fuel-backend \
+  fuel-backend
+
+# View logs
+docker logs -f fuel-backend
+
+# Stop container
+docker stop fuel-backend
+```
+
+### MongoDB
+```bash
+# Start MongoDB container
+docker run -d -p 27017:27017 --name fuel-mongodb mongo:latest
+
+# Stop MongoDB
+docker stop fuel-mongodb
+
+# Remove MongoDB container
+docker rm fuel-mongodb
+```
+
+## 🧪 Testing Commands
+
+### Backend API Testing
+```bash
+# Run full API test suite
+./test/backend-tests/test-api.sh
+
+# Test specific endpoints
+curl -X GET http://localhost:3000/health
+curl -X GET http://localhost:3000/api/users
+curl -X POST http://localhost:3000/api/users/topup \
+  -H "Content-Type: application/json" \
+  -d '{"rfid_uid":"TEST123","amount":100}'
+```
+
+### ESP32 Testing
+```bash
+# Check ESP32 status
+curl http://<esp32-ip>/status
+
+# Set manual UID
+curl -X POST http://<esp32-ip>/setuid \
+  -H "Content-Type: application/json" \
+  -d '{"uid":"TEST123"}'
+
+# Start dispensing
+curl -X POST http://<esp32-ip>/start \
+  -H "Content-Type: application/json" \
+  -d '{"amount":50}'
+```
+
+## 🔧 Maintenance Commands
+
+### System Check
+```bash
+# Full system status
+./scripts/system-check.sh
+
+# Check backend only
+curl http://localhost:3000/health
+
+# Check MongoDB
+pgrep mongod
+
+# Check ESP32 connection
+ls -la /dev/ttyUSB0
+```
+
+### Logs & Debugging
+```bash
+# View backend logs (if running in background)
+tail -f backend/server.log
+
+# View ESP32 serial output
+./scripts/monitor-esp32.sh
+
+# View MongoDB logs
+tail -f /var/log/mongodb/mongod.log
+```
+
+### Cleanup
+```bash
+# Remove node_modules
+cd backend
+rm -rf node_modules
+
+# Clean ESP32 build files
+cd esp32
+pio run --target clean
+
+# Stop all services
+pkill node
+pkill mongod
+```
+
+## 🔄 Update Commands
+
+### Pull Latest Changes
+```bash
+# Update repository
+git pull origin main
+
+# Reinstall backend dependencies
+cd backend
+npm install
+
+# Rebuild ESP32 firmware
+cd esp32
+pio run
+```
+
+### Update Dependencies
+```bash
+# Update backend packages
+cd backend
+npm update
+
+# Update PlatformIO platform
+cd esp32
+pio platform update
+
+# Update PlatformIO libraries
+cd esp32
+pio lib update
+```
+
+## 📊 Database Commands
+
+### MongoDB Shell
+```bash
+# Connect to database
+mongosh fuel-dispenser
+
+# View collections
+show collections
+
+# View users
+db.users.find()
+
+# View dispense history
+db.dispense_histories.find()
+
+# Count users
+db.users.count()
+
+# Drop database (careful!)
+use fuel-dispenser
+db.dropDatabase()
+```
+
+### Backup & Restore
+```bash
+# Backup database
+mongodump --db fuel-dispenser --out ./backup
+
+# Restore database
+mongorestore --db fuel-dispenser ./backup/fuel-dispenser
+
+# Export users to JSON
+mongoexport --db fuel-dispenser --collection users --out users.json
+
+# Import users from JSON
+mongoimport --db fuel-dispenser --collection users --file users.json
+```
+
+## 🌐 Network Commands
+
+### Find IP Addresses
+```bash
+# Find your IP address
+ip addr show
+ifconfig
+
+# Find ESP32 IP (check serial monitor)
+./scripts/monitor-esp32.sh
+
+# Scan network for ESP32
+nmap -sP 192.168.1.0/24
+```
+
+### Test Connectivity
+```bash
+# Ping backend
+ping <backend-ip>
+
+# Ping ESP32
+ping <esp32-ip>
+
+# Test backend API
+curl http://<backend-ip>:3000/health
+
+# Test ESP32 API
+curl http://<esp32-ip>/status
+```
+
+## 🚨 Emergency Commands
+
+### Stop Everything
+```bash
+# Stop backend
+pkill node
+
+# Stop MongoDB
+pkill mongod
+# Or with Docker
+docker stop fuel-mongodb
+
+# Stop ESP32 (press physical reset button)
+```
+
+### Reset System
+```bash
+# Reset backend
+cd backend
+rm -rf node_modules
+npm install
+
+# Reset database
+mongosh fuel-dispenser --eval "db.dropDatabase()"
+cd backend
+npm run seed
+
+# Reset ESP32 (hold EN/RST button)
+```
+
+## 📝 Useful Aliases (Optional)
+
+Add to your `~/.bashrc` or `~/.zshrc`:
+
+```bash
+# Navigation
+alias fuel='cd /path/to/fuel-system'
+
+# Backend
+alias fuel-start='cd /path/to/fuel-system && ./scripts/start-server.sh'
+alias fuel-logs='tail -f /path/to/fuel-system/backend/server.log'
+
+# ESP32
+alias fuel-upload='cd /path/to/fuel-system && ./scripts/upload-esp32.sh'
+alias fuel-monitor='cd /path/to/fuel-system && ./scripts/monitor-esp32.sh'
+
+# System
+alias fuel-check='cd /path/to/fuel-system && ./scripts/system-check.sh'
+```
+
+Then run `source ~/.bashrc` or `source ~/.zshrc` to activate.

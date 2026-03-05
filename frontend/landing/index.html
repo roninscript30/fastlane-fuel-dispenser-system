@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Lane Fuel Dispenser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+        @keyframes scan { 0%, 100% { transform: translateY(-10px); opacity: 0; } 50% { transform: translateY(10px); opacity: 1; } }
+        .pulse-animation { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .scan-animation { animation: scan 2s ease-in-out infinite; }
+        .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; font-size: 14px; font-weight: 500; }
+        .status-idle { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .status-scanning { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .status-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .nfc-icon { font-size: 64px; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-lg w-full">
+        <!-- Main Scanner Card -->
+        <div id="scannerCard" class="bg-slate-800 text-gray-100 rounded-2xl shadow-2xl p-10 text-center border border-slate-700">
+            <!-- Icon -->
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+                    <div class="w-32 h-32 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="bi bi-wifi nfc-icon text-white"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-blue-500 rounded-full pulse-animation opacity-20"></div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-3xl font-bold text-white mb-2">Present Your Card</h1>
+            <p class="text-base text-slate-400 mb-8">Hold your card near the reader to continue</p>
+
+            <!-- Status Pill -->
+            <div class="flex justify-center mb-6">
+                <div id="scannerStatus" class="status-pill status-idle">
+                    <span class="w-2 h-2 bg-current rounded-full pulse-animation"></span>
+                    <span>Waiting for card...</span>
+                </div>
+            </div>
+
+            <!-- UID Display -->
+            <div id="uidDisplay" class="mb-8 p-4 bg-slate-900 rounded-lg border border-slate-700">
+                <p class="text-xs text-slate-500 uppercase tracking-wide mb-2">Card UID</p>
+                <p id="uidValue" class="text-xl font-mono text-slate-300 tracking-wider">-</p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="space-y-3">
+                <button 
+                    id="scanButton" 
+                    onclick="startScanning()" 
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg"
+                >
+                    <i class="bi bi-arrow-clockwise text-lg"></i>
+                    Start Scanning
+                </button>
+
+                <button 
+                    id="stopButton" 
+                    onclick="stopScanning()" 
+                    style="display:none;"
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-base font-medium bg-red-600 text-white hover:bg-red-700 transition-all"
+                >
+                    <i class="bi bi-x-circle text-lg"></i>
+                    Stop Scanning
+                </button>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-8 pt-6 border-t border-slate-700">
+                <p class="text-xs text-slate-400">
+                    <i class="bi bi-info-circle mr-1"></i>
+                    Make sure your RFID card is registered in the system
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 space-y-2">
+            <p class="text-slate-400 text-sm flex items-center justify-center gap-2">
+                <i class="bi bi-shield-check"></i>
+                Secure connection to fuel dispenser
+            </p>
+            <p class="text-slate-500 text-xs">
+                © 2025 Fast Lane Fuel. All rights reserved.
+            </p>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertBox" style="display:none;" class="fixed top-4 right-4 bg-slate-800 rounded-lg shadow-2xl border border-slate-700 p-4 max-w-sm z-50">
+        <div class="flex items-start gap-3">
+            <i id="alertIcon" class="bi bi-exclamation-circle text-xl flex-shrink-0"></i>
+            <div class="flex-1">
+                <p id="alertMessage" class="text-sm text-white"></p>
+            </div>
+            <button onclick="hideAlert()" class="text-slate-400 hover:text-white transition-colors">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="assets/js/landing.js"></script>
+</body>
+</html>

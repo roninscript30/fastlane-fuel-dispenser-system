@@ -1,0 +1,341 @@
+# Fast Lane Fuel System - Requirements
+
+## System Requirements
+
+### Hardware Requirements
+
+#### For Development/Server Machine
+- **Processor**: Intel Core i3 or equivalent (dual-core minimum)
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 2GB free space
+- **Network**: WiFi or Ethernet connection
+- **USB Port**: For ESP32 programming
+- **Operating System**: Linux (Ubuntu 20.04+, Arch, Debian) or macOS
+
+#### For ESP32 Fuel Dispenser
+- **Microcontroller**: ESP32 Dev Board (ESP32-WROOM-32 or compatible)
+- **RFID Reader**: MFRC522 RC522 module (13.56MHz)
+- **Relay Module**: 5V relay module (optocoupler isolated)
+- **Power Supply**: 5V 2A minimum for ESP32 and peripherals
+- **Fuel Pump**: Compatible with relay control (110V/220V AC)
+- **RFID Cards/Tags**: 13.56MHz ISO14443A compatible
+
+### Software Requirements
+
+#### Server/Backend
+- **Operating System**: Linux (Ubuntu 20.04+, Arch, Debian) or macOS
+- **Node.js**: v18.0.0 or higher (LTS recommended)
+- **npm**: v9.0.0 or higher (comes with Node.js)
+- **MongoDB**: v5.0 or higher
+  - Local installation OR
+  - Docker for containerized MongoDB
+
+#### ESP32 Development
+- **PlatformIO**: v6.0 or higher
+  - Install via: `pip install platformio`
+- **Python**: v3.7 or higher (for PlatformIO)
+- **USB-to-Serial Drivers**: CP210x or CH340 (depending on ESP32 board)
+
+#### Optional but Recommended
+- **Git**: For version control
+- **Docker**: v20.10+ (optional, for containerized deployment)
+- **Docker Compose**: v2.0+ (optional)
+- **curl**: For API testing
+- **Postman** or **Insomnia**: For API development/testing
+
+### Network Requirements
+
+- **Local Network**: WiFi or Ethernet network
+- **WiFi for ESP32**: 2.4GHz WiFi (ESP32 doesn't support 5GHz)
+- **Static IP Recommended**: For both backend server and ESP32
+- **Ports to Open**:
+  - `3000`: Backend API (configurable)
+  - `27017`: MongoDB (if remote access needed)
+  - `80`: ESP32 web interface
+
+## Dependencies
+
+### Backend Dependencies (npm)
+
+```json
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "mongoose": "^8.20.0"
+  }
+}
+```
+
+### ESP32 Dependencies (PlatformIO)
+
+```ini
+lib_deps =
+  miguelbalboa/MFRC522
+  bblanchon/ArduinoJson@^6.19.4
+```
+
+### System Packages (Linux)
+
+#### Ubuntu/Debian
+```bash
+sudo apt update
+sudo apt install -y \
+  nodejs \
+  npm \
+  mongodb \
+  python3 \
+  python3-pip \
+  git \
+  curl \
+  net-tools
+```
+
+#### Arch Linux
+```bash
+sudo pacman -S \
+  nodejs \
+  npm \
+  mongodb \
+  python \
+  python-pip \
+  git \
+  curl \
+  net-tools
+```
+
+#### Fedora/RHEL
+```bash
+sudo dnf install -y \
+  nodejs \
+  npm \
+  mongodb \
+  python3 \
+  python3-pip \
+  git \
+  curl \
+  net-tools
+```
+
+### macOS
+```bash
+# Install Homebrew first if not installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install dependencies
+brew install node mongodb-community python git curl
+```
+
+## Installation Steps
+
+### 1. Install Node.js and npm
+```bash
+# Check if already installed
+node --version
+npm --version
+
+# If not installed, follow instructions at:
+# https://nodejs.org/
+
+# Or use nvm (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install --lts
+```
+
+### 2. Install MongoDB
+```bash
+# Check if already installed
+mongod --version
+
+# Ubuntu/Debian
+sudo apt install mongodb
+
+# Arch Linux
+sudo pacman -S mongodb
+sudo systemctl start mongodb
+sudo systemctl enable mongodb
+
+# Or use Docker
+docker run -d -p 27017:27017 --name fuel-mongodb mongo:latest
+```
+
+### 3. Install PlatformIO
+```bash
+# Install Python (if not already installed)
+python3 --version
+
+# Install PlatformIO
+pip install platformio
+
+# Verify installation
+pio --version
+```
+
+### 4. Install USB Drivers (if needed)
+
+#### CP210x Driver (Most ESP32 boards)
+- **Linux**: Usually built-in, check with `lsusb`
+- **macOS**: Download from Silicon Labs website
+- **Windows**: Download from Silicon Labs website
+
+#### CH340 Driver (Some ESP32 clones)
+- Download from manufacturer or:
+```bash
+# Linux (automatic)
+sudo apt install linux-headers-$(uname -r)
+
+# macOS
+brew install --cask wch-ch34x-usb-serial-driver
+```
+
+### 5. Set USB Permissions (Linux)
+```bash
+# Add user to dialout group
+sudo usermod -a -G dialout $USER
+
+# Or set permissions for current session
+sudo chmod 666 /dev/ttyUSB0
+
+# Logout and login for permanent effect
+```
+
+## Minimum Skill Requirements
+
+### For Setup and Deployment
+- Basic Linux/macOS command line
+- Understanding of IP addresses and networking
+- Ability to edit configuration files
+
+### For Development
+- **Backend**: JavaScript/Node.js, Express.js, MongoDB
+- **ESP32**: C++, Arduino framework, basic electronics
+- **Frontend**: HTML, CSS, JavaScript (vanilla)
+
+## Hardware Wiring (ESP32)
+
+### MFRC522 RFID Reader
+```
+MFRC522 → ESP32
+-----------------
+SDA (SS) → GPIO 21
+SCK      → GPIO 18
+MOSI     → GPIO 23
+MISO     → GPIO 19
+IRQ      → Not connected
+GND      → GND
+RST      → GPIO 22
+3.3V     → 3.3V
+```
+
+### Relay Module
+```
+Relay  → ESP32
+--------------
+VCC    → 5V (VIN)
+GND    → GND
+IN     → GPIO 25
+```
+
+### Power Supply
+- ESP32: 5V via USB or VIN pin
+- MFRC522: 3.3V from ESP32
+- Relay: 5V from ESP32 VIN
+
+## Security Considerations
+
+### Production Deployment
+- [ ] Change default admin RFID tag
+- [ ] Use environment variables for sensitive data
+- [ ] Enable HTTPS/SSL for backend
+- [ ] Implement proper authentication
+- [ ] Use strong MongoDB passwords
+- [ ] Enable MongoDB authentication
+- [ ] Configure firewall rules
+- [ ] Regular security updates
+
+### Development
+- [ ] Don't commit `.env` files
+- [ ] Use `.gitignore` for sensitive data
+- [ ] Keep dependencies updated
+- [ ] Test before deploying
+
+## Performance Considerations
+
+### Backend
+- **Expected Load**: 10-50 concurrent users
+- **Response Time**: < 100ms for API calls
+- **Database**: MongoDB handles 100+ transactions/second
+- **Memory Usage**: ~200MB for Node.js process
+
+### ESP32
+- **WiFi Range**: 30-50 meters (indoor)
+- **RFID Read Range**: 3-5 cm
+- **Response Time**: < 500ms for card detection
+- **Power Consumption**: ~160mA during operation
+
+## Troubleshooting Requirements
+
+### Common Issues
+1. **MongoDB won't start**: Check port 27017 not in use
+2. **ESP32 upload fails**: Install USB drivers, check permissions
+3. **WiFi connection fails**: Verify 2.4GHz network, check credentials
+4. **Backend API errors**: Check MongoDB connection, verify Node.js version
+
+### Required Tools for Debugging
+- Serial monitor (PlatformIO or Arduino IDE)
+- Browser developer tools
+- MongoDB Compass (GUI for database)
+- Postman/curl for API testing
+
+## Optional Enhancements
+
+### Recommended but Not Required
+- **Redis**: For caching and session management
+- **Nginx**: As reverse proxy for production
+- **PM2**: For Node.js process management
+- **Docker Compose**: For orchestration
+- **Grafana + Prometheus**: For monitoring
+- **Let's Encrypt**: For free SSL certificates
+
+## Version Compatibility
+
+| Component | Minimum Version | Tested Version | Notes |
+|-----------|----------------|----------------|-------|
+| Node.js | 18.0.0 | 20.11.0 | LTS recommended |
+| MongoDB | 5.0 | 7.0 | Community edition |
+| PlatformIO | 6.0 | 6.1.13 | Latest stable |
+| Python | 3.7 | 3.11 | For PlatformIO |
+| ESP32 Arduino | 2.0.0 | 2.0.14 | Via PlatformIO |
+
+## License Requirements
+
+- **Backend**: ISC License (or your choice)
+- **Libraries**: Check individual library licenses
+- **MFRC522**: GNU LGPL v2.1
+- **ArduinoJson**: MIT License
+- **Express.js**: MIT License
+- **MongoDB**: Server Side Public License
+
+## Support and Documentation
+
+- **Node.js**: https://nodejs.org/docs
+- **MongoDB**: https://docs.mongodb.com
+- **PlatformIO**: https://docs.platformio.org
+- **ESP32 Arduino**: https://docs.espressif.com
+- **MFRC522**: https://github.com/miguelbalboa/rfid
+
+## Quick Verification Checklist
+
+Before starting, verify you have:
+- [ ] Node.js v18+ installed (`node --version`)
+- [ ] npm v9+ installed (`npm --version`)
+- [ ] MongoDB installed or Docker available
+- [ ] Python 3.7+ installed (`python3 --version`)
+- [ ] PlatformIO installed (`pio --version`)
+- [ ] ESP32 board and RFID reader
+- [ ] USB cable and working USB port
+- [ ] WiFi network (2.4GHz)
+- [ ] Git installed (optional)
+
+Run `./scripts/system-check.sh` to verify your setup.

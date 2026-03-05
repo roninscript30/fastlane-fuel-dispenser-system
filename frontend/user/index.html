@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Dashboard - User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { background: #0f172a; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+        .content-card { background: #1e293b; border: 1px solid #334155; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        .fuel-progress { 
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen">
+    <!-- Top Navbar -->
+    <nav class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                        <i class="bi bi-lightning-charge-fill text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-base font-semibold text-white">Fast Lane Fuel</span>
+                        <p class="text-xs text-slate-400">User Dashboard</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 transition-all flex items-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <!-- Profile & Balance Card -->
+        <div class="content-card rounded-xl p-6">
+            <div class="flex items-start gap-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 id="userName" class="text-xl font-semibold text-white">Loading...</h2>
+                    <p id="userUID" class="text-sm text-slate-400 mt-1">-</p>
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Available Balance</p>
+                            <p id="balance" class="text-2xl font-bold text-white">₹0.00</p>
+                        </div>
+                        <div class="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                            <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Account Status</p>
+                            <div id="balanceStatus" class="flex items-center gap-2 mt-2">
+                                <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                                <span class="text-emerald-400 font-medium text-sm">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4">
+                        <button onclick="showTopupModal()" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 hover:bg-blue-700 transition-all flex items-center gap-2">
+                            <i class="bi bi-wallet-fill"></i>
+                            Add Balance
+                        </button>
+                        <button onclick="window.location.reload()" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 hover:bg-slate-600 transition-all flex items-center gap-2">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fuel Dispensing Card -->
+        <div class="content-card rounded-xl p-6" id="dispenseCard">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-fuel-pump-fill text-blue-400"></i>
+                Fuel Dispensing
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-slate-300 mb-2">Enter Amount (₹)</label>
+                    <input 
+                        type="number" 
+                        id="amount" 
+                        placeholder="Enter amount" 
+                        min="1" 
+                        step="1"
+                        oninput="calculateFuel()"
+                        class="bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 w-full text-lg focus:outline-none focus:border-blue-500"
+                    >
+                    <div id="fuelInfo" class="flex items-center gap-2 mt-3 text-sm text-slate-400">
+                        <i class="bi bi-info-circle"></i>
+                        <span id="fuelAmount">Enter amount to calculate fuel</span>
+                    </div>
+                </div>
+
+                <!-- Quick Amount Buttons -->
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="document.getElementById('amount').value=500; calculateFuel();" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600 hover:border-blue-500 transition-all">
+                        ₹500
+                    </button>
+                    <button onclick="document.getElementById('amount').value=1000; calculateFuel();" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600 hover:border-blue-500 transition-all">
+                        ₹1000
+                    </button>
+                    <button onclick="document.getElementById('amount').value=1500; calculateFuel();" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600 hover:border-blue-500 transition-all">
+                        ₹1500
+                    </button>
+                    <button onclick="document.getElementById('amount').value=2000; calculateFuel();" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600 hover:border-blue-500 transition-all">
+                        ₹2000
+                    </button>
+                </div>
+
+                <!-- Start Button -->
+                <button 
+                    id="startButton" 
+                    onclick="startDispense()" 
+                    disabled 
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-base font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                    <i class="bi bi-play-circle-fill text-xl"></i>
+                    Start Dispensing
+                </button>
+
+                <!-- Stop Button -->
+                <button 
+                    id="stopButton" 
+                    onclick="stopDispense()" 
+                    style="display:none;"
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-lg text-base font-medium bg-red-600 text-white hover:bg-red-700 transition-all"
+                >
+                    <i class="bi bi-stop-circle-fill text-xl"></i>
+                    Emergency Stop
+                </button>
+
+                <!-- Dispensing Status -->
+                <div id="dispenseStatus" class="hidden mt-6 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="text-center">
+                            <div class="relative inline-block">
+                                <div class="w-20 h-20 rounded-full border-4 border-slate-700 flex items-center justify-center">
+                                    <p class="text-3xl font-bold text-white" id="remainingTime">15s</p>
+                                </div>
+                                <div class="absolute top-0 left-0 w-20 h-20">
+                                    <svg class="transform -rotate-90" viewBox="0 0 80 80">
+                                        <circle id="progressCircle" cx="40" cy="40" r="36" fill="none" stroke="#3b82f6" stroke-width="4" stroke-dasharray="226" stroke-dashoffset="0" class="transition-all duration-1000"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-2">Time Remaining</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="bg-slate-700 rounded-lg p-3 text-center">
+                            <p class="text-slate-400 text-xs mb-1">Amount</p>
+                            <strong id="dispensingAmount" class="text-white text-lg">₹0.00</strong>
+                        </div>
+                        <div class="bg-slate-700 rounded-lg p-3 text-center">
+                            <p class="text-slate-400 text-xs mb-1">Volume</p>
+                            <strong id="dispensingVolume" class="text-white text-lg">0.0 L</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="content-card rounded-xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="bi bi-clock-history text-blue-400"></i>
+                Recent Transactions
+            </h3>
+            <div id="activityList" class="space-y-3">
+                <div class="text-center py-8 text-slate-400 text-sm">
+                    <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                    No recent transactions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top-up Modal -->
+    <div id="topupModal" class="modal">
+        <div class="bg-slate-800 rounded-xl shadow-2xl max-w-md w-full mx-4 border border-slate-700">
+            <div class="flex items-center justify-between p-6 border-b border-slate-700">
+                <h3 class="text-lg font-semibold text-white">Add Balance</h3>
+                <button onclick="closeTopupModal()" class="text-slate-400 hover:text-white text-2xl leading-none transition-colors">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="topupAmount" class="block text-sm font-medium text-slate-300 mb-2">Enter Amount (₹)</label>
+                    <input 
+                        type="number" 
+                        id="topupAmount" 
+                        placeholder="Enter amount to add" 
+                        min="1" 
+                        step="1"
+                        class="bg-slate-700 border border-slate-600 text-white rounded-lg px-4 py-3 w-full text-lg focus:outline-none focus:border-blue-500"
+                    >
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="setTopupAmount(100)" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600">
+                        ₹100
+                    </button>
+                    <button onclick="setTopupAmount(500)" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600">
+                        ₹500
+                    </button>
+                    <button onclick="setTopupAmount(1000)" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600">
+                        ₹1000
+                    </button>
+                    <button onclick="setTopupAmount(2000)" class="px-3 py-3 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 border border-slate-600">
+                        ₹2000
+                    </button>
+                </div>
+                <div class="flex items-center gap-3 pt-4">
+                    <button onclick="closeTopupModal()" class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium bg-slate-700 text-white hover:bg-slate-600 transition-all">
+                        Cancel
+                    </button>
+                    <button onclick="processTopup()" class="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Add Balance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertBox" class="hidden fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm z-50">
+        <p id="alertMessage" class="text-sm text-gray-900"></p>
+    </div>
+
+    <script src="assets/js/user.js"></script>
+</body>
+</html>
